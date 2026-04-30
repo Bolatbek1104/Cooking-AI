@@ -33,16 +33,30 @@ async function sendMessage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    
     const data = await res.json();
     hideTyping();
 
     if (data.error) {
       appendMessage('chef', `⚠️ ${data.error}`);
     } else {
-      appendMessage('chef', data.response);
+      // Собираем ответ из новых полей roast и recipe
+      if (data.roast && data.recipe) {
+        const fullResponse = `## ${data.title}\n\n${data.roast}\n\n---\n\n${data.recipe}`;
+        appendMessage('chef', fullResponse);
+      } 
+      // Если бэкенд прислал старый формат ответа
+      else if (data.response) {
+        appendMessage('chef', data.response);
+      } 
+      else {
+        appendMessage('chef', "Я получил данные, но не знаю, как их приготовить. Попробуй еще раз!");
+      }
+      
       updateAgentPanel(data);
     }
   } catch (e) {
+    console.error("JS Error:", e); // Поможет увидеть ошибку в консоли
     hideTyping();
     appendMessage('chef', '💀 Chef crashed harder than a soufflé in an earthquake. Refresh and try again fam.');
   }
