@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chef Big Max — AI Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🔥 Chef Big Max</div>
+    <div class="logo-sub">AI Culinary Agent v2.0</div>
+  </div>
+  <div class="agent-badge">⚡ AGENT ONLINE</div>
+  <div class="header-right">
+    <button class="reset-btn" onclick="resetSession()">↺ NEW SESSION</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- AGENT STATUS PANEL -->
+  <div class="agent-panel">
+    <div>
+      <div class="panel-title">AGENT STAGES</div>
+      <div class="stage-list" id="stage-list">
+        <div class="stage-item active" id="stage-profiling">
+          <div class="stage-dot"></div>
+          <span>🎯 User Profiling</span>
+        </div>
+        <div class="stage-item pending" id="stage-recipe">
+          <div class="stage-dot"></div>
+          <span>🧠 Recipe Generation</span>
+        </div>
+        <div class="stage-item pending" id="stage-followup">
+          <div class="stage-dot"></div>
+          <span>💬 Follow-up Chat</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title">USER PROFILE</div>
+      <div class="profile-section">
+        <div class="profile-item">
+          <div class="profile-label">Skill Level</div>
+          <div class="profile-value empty" id="p-skill">Gathering data...</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-label">Dietary</div>
+          <div class="profile-value empty" id="p-diet">Gathering data...</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-label">Tools</div>
+          <div class="profile-value empty" id="p-tools">Gathering data...</div>
+        </div>
+        <div class="profile-item">
+          <div class="profile-label">Time</div>
+          <div class="profile-value empty" id="p-time">Gathering data...</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel-title">SESSION STATS</div>
+      <div class="recipe-count">Recipes generated: <span id="recipe-count">0</span></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="messages" id="messages"></div>
+
+    <!-- IMAGE PREVIEW -->
+    <div class="img-preview" id="img-preview">
+      <img id="preview-img" src="" alt="">
+      <span>Fridge photo ready 📸</span>
+      <button onclick="clearImage()">✕</button>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea
+          id="msg-input"
+          placeholder="Talk to Chef Big Max... or drop your ingredients fr fr"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="img-btn" title="Upload fridge photo" onclick="document.getElementById('file-input').click()">📷</button>
+      </div>
+      <input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">SEND</button>
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

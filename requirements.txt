@@ -1,0 +1,9 @@
+# Python dependencies for "Roast My Fridge"
+# Install all of these by running: pip install -r requirements.txt
+
+flask==3.1.0          # The web framework — handles routes and HTTP
+openai==1.77.0        # Official OpenAI Python SDK — talks to GPT
+python-dotenv==1.1.0  # Optional: loads .env file so you don't export keys manually
+flask-login==0.6.2    # User session management (login/logout)
+flask-sqlalchemy==3.0.2 # Database ORM for user accounts
+requests==2.31.0        # For making HTTP requests (if needed for APIs)
