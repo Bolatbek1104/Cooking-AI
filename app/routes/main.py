@@ -36,7 +36,9 @@ def chat():
     db.session.commit()
     
     return jsonify({
-            "roast": new_recipe.roast_text,
-            "recipe": new_recipe.recipe_text,
-            "title": new_recipe.title
-        })
+    "roast": new_recipe.roast_text,
+    "recipe": new_recipe.recipe_text,
+    "title": new_recipe.title,
+    "stage": "recipe", # Чтобы обновилась панель слева
+    "recipe_count": 1
+})
