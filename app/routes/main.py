@@ -39,6 +39,12 @@ def chat():
     "roast": new_recipe.roast_text,
     "recipe": new_recipe.recipe_text,
     "title": new_recipe.title,
-    "stage": "recipe", # Чтобы обновилась панель слева
-    "recipe_count": 1
+    "stage": "recipe",  # Переключит лампочку на Recipe Generation
+    "recipe_count": 1,   # Обновит счетчик рецептов
+    "profile": {        # Заполнит карточки профиля
+        "skill_level": "Нищий гурман",
+        "dietary": "Картофельная диета",
+        "tools": "Духовка",
+        "time_available": "25 минут"
+    }
 })
