@@ -1,50 +1,41 @@
-from flask import Blueprint, render_template, request, jsonify
-from ..services.ai_service import call_chef_service
+from flask import Blueprint, request, jsonify, session
+from app.services import ai_service
 from app.models import db
 from app.models.recipe import Recipe
-# ВОТ ЭТА СТРОКА КРИТИЧЕСКИ ВАЖНА:
+
+# 1. СОЗДАЕМ BLUEPRINT (этой строки у тебя не хватало или она была скрыта)
 bp = Blueprint('main', __name__)
-
-@bp.route('/')
-def index():
-    return render_template('index.html')
-
-@bp.route('/start', methods=['POST'])
-def start():
-    # Начальное приветствие от Шефа
-    return jsonify({
-        "response": "Ну привет. Выкладывай, что там у тебя в холодильнике, только не заставляй меня плакать от твоей нищеты.",
-        "stage": "profiling"
-    })
 
 @bp.route('/chat', methods=['POST'])
 def chat():
     data = request.json
-    user_msg = data.get('message', '')
+    user_message = data.get('message', '')
+
+    # Достаем историю из сессии или создаем пустую
+    if 'history' not in session:
+        session['history'] = []
+
+    # Вызываем сервис, передавая историю
+    result = ai_service.call_chef_service(user_message, session['history'])
     
-    # Получаем ответ от ИИ
-    chef_data = call_chef_service(user_msg)
-    
-    # СОХРАНЯЕМ В ПАМЯТЬ
-    new_recipe = Recipe(
-        title=chef_data.get('title'),
-        ingredients=user_msg,
-        roast_text=chef_data.get('roast'),
-        recipe_text=chef_data.get('recipe')
-    )
-    db.session.add(new_recipe)
-    db.session.commit()
-    
+    # Добавляем в историю текущий диалог
+    session['history'].append({"role": "user", "content": user_message})
+    session['history'].append({"role": "assistant", "content": result['response']})
+    session.modified = True 
+
+    # Если рецепт готов, сохраняем в базу
+    if result.get('stage') == 'recipe':
+        new_recipe = Recipe(
+            title=result.get('title', 'Chef Big Max Creation'),
+            ingredients=user_message,
+            recipe_text=result['response']
+        )
+        db.session.add(new_recipe)
+        db.session.commit()
+
     return jsonify({
-    "roast": new_recipe.roast_text,
-    "recipe": new_recipe.recipe_text,
-    "title": new_recipe.title,
-    "stage": "recipe",  # Переключит лампочку на Recipe Generation
-    "recipe_count": 1,   # Обновит счетчик рецептов
-    "profile": {        # Заполнит карточки профиля
-        "skill_level": "Нищий гурман",
-        "dietary": "Картофельная диета",
-        "tools": "Духовка",
-        "time_available": "25 минут"
-    }
-})
+        "response": result['response'],
+        "stage": result.get('stage'),
+        "profile": result.get('profile'),
+        "recipe_count": len(session.get('history', [])) // 2
+    })
