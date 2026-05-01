@@ -1,8 +1,28 @@
 let imageData = null;
 let isLoading = false;
+let gatheringFrame = 2;
+let gatheringTimer = null;
+const sendButtonText = 'Send';
+const sendLoadingMarkup = `
+  <svg class="cauldron-loader" viewBox="0 0 72 72" aria-hidden="true">
+    <path class="cauldron-foot" d="M23 60 18 68h10l5-7M49 60l5 8H44l-5-7" />
+    <path class="cauldron-body" d="M14 30c0 21 10 35 22 35s22-14 22-35c-2 0-5 2-6 5-2 12-8 22-16 22S22 47 20 35c-1-3-4-5-6-5z" />
+    <g class="cauldron-stir">
+      <g class="cauldron-spoon">
+        <path class="spoon-handle" d="M47 9 36 34" />
+        <path class="spoon-bowl" d="M32 39c1-5 10-4 9 1-1 6-10 5-9-1z" />
+      </g>
+    </g>
+    <path class="cauldron-mouth-fill" d="M13 25h46v12H13z" />
+    <path class="cauldron-fill" d="M15 30c1 21 10 35 21 35s20-14 21-35H15z" />
+    <path class="cauldron-highlight" d="M24 43c-2 7 2 13 8 17" />
+    <path class="cauldron-rim" d="M10 24c0-3 2-5 5-5h42c3 0 5 2 5 5v5c0 3-2 5-5 5H15c-3 0-5-2-5-5z" />
+  </svg>
+`;
 
 window.addEventListener('load', () => {
   updateThemeToggle();
+  startGatheringAnimation();
   startSession();
 });
 
@@ -12,21 +32,18 @@ function toggleTheme() {
   document.documentElement.dataset.theme = nextTheme;
   try {
     localStorage.setItem('theme', nextTheme);
-  } catch (e) {}
+  } catch (e) { }
   updateThemeToggle();
 }
 
 function updateThemeToggle() {
   const isDark = document.documentElement.dataset.theme === 'dark';
   const button = document.getElementById('theme-toggle');
-  const icon = document.getElementById('theme-toggle-icon');
-  const text = document.getElementById('theme-toggle-text');
 
-  if (!button || !icon || !text) return;
+  if (!button) return;
 
   button.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
-  icon.textContent = isDark ? 'L' : 'D';
-  text.textContent = isDark ? 'Light' : 'Dark';
+  button.classList.toggle('is-dark', isDark);
 }
 
 async function startSession() {
@@ -35,9 +52,9 @@ async function startSession() {
 
   if (data.messages && data.messages.length) {
     data.messages.forEach((message) => appendMessage(
-  message.role === 'assistant' ? 'chef' : 'user',
-  message.content
-));
+      message.role === 'assistant' ? 'chef' : 'user',
+      message.content
+    ));
   } else if (data.response) {
     appendMessage('chef', data.response);
   }
@@ -86,7 +103,7 @@ function appendMessage(role, text) {
 
   const avatar = document.createElement('div');
   avatar.className = 'avatar';
-  avatar.textContent = role === 'chef' ? 'C' : 'me';
+  avatar.textContent = role === 'chef' ? '👨‍🍳' : 'me';
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
@@ -426,9 +443,34 @@ function setProfile(id, val) {
     el.textContent = val;
     el.className = 'profile-value';
   } else {
-    el.textContent = 'Gathering data...';
+    el.textContent = gatheringText();
     el.className = 'profile-value empty';
+    startGatheringAnimation();
   }
+}
+
+function startGatheringAnimation() {
+  if (gatheringTimer) return;
+
+  gatheringTimer = setInterval(() => {
+    const emptyProfileValues = document.querySelectorAll('.profile-value.empty');
+
+    if (!emptyProfileValues.length) {
+      clearInterval(gatheringTimer);
+      gatheringTimer = null;
+      return;
+    }
+
+    gatheringFrame = (gatheringFrame + 1) % 3;
+
+    emptyProfileValues.forEach((el) => {
+      el.textContent = gatheringText();
+    });
+  }, 520);
+}
+
+function gatheringText() {
+  return `Gathering data${'.'.repeat(gatheringFrame + 1)}`;
 }
 
 function handleImageUpload(e) {
@@ -472,6 +514,10 @@ function autoResize(el) {
 
 function setLoading(v) {
   isLoading = v;
-  document.getElementById('send-btn').disabled = v;
+  const sendButton = document.getElementById('send-btn');
+  sendButton.disabled = v;
+  sendButton.classList.toggle('is-loading', v);
+  sendButton.setAttribute('aria-label', v ? 'Generating response' : 'Send message');
+  sendButton.innerHTML = v ? sendLoadingMarkup : sendButtonText;
   document.getElementById('msg-input').disabled = v;
 }
