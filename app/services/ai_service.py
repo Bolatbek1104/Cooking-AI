@@ -151,22 +151,45 @@ Use an empty dish_options array unless stage is "options".
 """
 
 
-def _build_messages(message, history=None, selected_option=None):
+def _build_messages(message, history=None, selected_option=None, image_b64=None):
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     if history:
         messages.extend(history)
 
-    user_content = (
+    text_content = (
         f"My ingredients/answer: {message}\n"
         "Treat mentioned ingredients as the user's available ingredients. "
         "Do not assume additional required ingredients unless the user already mentioned them; "
         "list extras only as optional or ask a short question."
     )
     if selected_option:
-        user_content += (
+        text_content += (
             "\nThe user selected this dish option. Give the full recipe for it:\n"
             f"{json.dumps(selected_option, ensure_ascii=False)}"
         )
+
+    # Если есть фото — multimodal блок (OpenAI-совместимый формат для OpenRouter / Gemini)
+    if image_b64:
+        user_content = [
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{image_b64}"
+                }
+            },
+            {
+                "type": "text",
+                "text": (
+                    "This is a photo of my fridge or ingredients. "
+                    "Carefully identify ALL visible food items, ingredients, condiments, and drinks. "
+                    "List them, then treat that list as my available ingredients.\n\n"
+                    + text_content
+                )
+            }
+        ]
+    else:
+        user_content = text_content
+
     messages.append({"role": "user", "content": user_content})
     return messages
 
@@ -197,7 +220,7 @@ def _parse_chef_response(full_content):
     }
 
 
-def call_chef_service(message, history=None, selected_option=None):
+def call_chef_service(message, history=None, selected_option=None, image_b64=None):
     api_key = current_app.config["OPENROUTER_API_KEY"]
 
     if not api_key:
@@ -214,7 +237,7 @@ def call_chef_service(message, history=None, selected_option=None):
 
     payload = {
         "model": "google/gemini-2.0-flash-001",
-        "messages": _build_messages(message, history, selected_option),
+        "messages": _build_messages(message, history, selected_option, image_b64),
         "temperature": 0.7,
     }
 
@@ -262,7 +285,7 @@ def call_chef_service(message, history=None, selected_option=None):
         }
 
 
-def stream_chef_service(message, history=None, selected_option=None):
+def stream_chef_service(message, history=None, selected_option=None, image_b64=None):
     api_key = current_app.config["OPENROUTER_API_KEY"]
 
     if not api_key:
@@ -281,7 +304,7 @@ def stream_chef_service(message, history=None, selected_option=None):
 
     payload = {
         "model": "google/gemini-2.0-flash-001",
-        "messages": _build_messages(message, history, selected_option),
+        "messages": _build_messages(message, history, selected_option, image_b64),
         "temperature": 0.7,
         "stream": True,
     }

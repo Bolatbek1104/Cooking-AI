@@ -192,12 +192,14 @@ def chat():
     data = request.get_json(silent=True) or {}
     user_message = data.get('message', '').strip()
     selected_option = data.get('selected_option')
+    image_b64 = data.get('image')  # base64 фото с фронта
     session_id = _session_id()
 
     result = ai_service.call_chef_service(
         user_message,
         _history_with_profile_context(session_id),
         selected_option,
+        image_b64,
     )
 
     if result.get('error'):
@@ -252,6 +254,7 @@ def chat_stream():
     data = request.get_json(silent=True) or {}
     user_message = data.get('message', '').strip()
     selected_option = data.get('selected_option')
+    image_b64 = data.get('image')  # base64 фото с фронта
     session_id = _session_id()
     history = _history_with_profile_context(session_id)
 
@@ -259,7 +262,7 @@ def chat_stream():
     def generate():
         final_result = None
 
-        for event in ai_service.stream_chef_service(user_message, history, selected_option):
+        for event in ai_service.stream_chef_service(user_message, history, selected_option, image_b64):
             event_type = event.get("type")
 
             if event_type == "delta":
