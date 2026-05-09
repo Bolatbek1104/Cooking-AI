@@ -13,21 +13,15 @@ The project is built as an AI agent, not a fixed automation. It collects context
 - Streaming AI responses, so text appears in real time
 - Chat history stored in SQLite
 - Recipe cards with generated food images
+- Fridge photo analysis — upload a photo of your fridge and the agent identifies ingredients and suggests dishes
 - Simple web UI built with Flask templates, CSS, and JavaScript
 
 ## Agent Flow
 
-1. User profiling
-   The agent asks for cooking skill level, allergies or restrictions, available tools, and time.
-
-2. Dish options
-   After the profile is complete, the user gives ingredients. The agent suggests 3 to 5 possible dishes instead of immediately generating one recipe.
-
-3. Recipe generation
-   The user selects one dish card. The agent creates a full recipe adapted to the user's profile.
-
-4. Follow-up
-   The user can ask for substitutions, faster versions, scaling, or cooking help.
+1. **User profiling** — The agent asks for cooking skill level, allergies or restrictions, available tools, and time.
+2. **Dish options** — After the profile is complete, the user gives ingredients or uploads a fridge photo. The agent suggests 3 to 5 possible dishes instead of immediately generating one recipe.
+3. **Recipe generation** — The user selects one dish card. The agent creates a full recipe adapted to the user's profile.
+4. **Follow-up** — The user can ask for substitutions, faster versions, scaling, or cooking help.
 
 ## Why This Is An AI Agent
 
@@ -54,13 +48,13 @@ This project is not a fixed sequence of steps. The assistant:
 
 Install dependencies:
 
-```bash
+```
 pip install -r requirements.txt
 ```
 
 Create a `.env` file near the project files and add your API keys:
 
-```env
+```
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 PEXELS_API_KEY=your_pexels_api_key_here
 SECRET_KEY=dev-secret-123
@@ -70,13 +64,13 @@ The Pexels key is used to search stable real food photos for recipe cards. You c
 
 Run the app:
 
-```bash
+```
 python run.py
 ```
 
 Open the app in your browser:
 
-```text
+```
 http://localhost:5000
 ```
 
@@ -94,7 +88,7 @@ The agent should suggest several dish options. Choose one card, then show how it
 
 ## Project Structure
 
-```text
+```
 app/
   models/
     recipe.py
@@ -117,4 +111,5 @@ run.py
 
 - Recipe card images use Pexels search first. If Pexels is not configured or does not return a result, the app falls back to generated images.
 - The AI response includes a hidden JSON block used by the app to update stages, profile data, and dish cards.
-- The photo upload button is present in the interface, but fridge image analysis is not the main implemented feature yet.
+- Users can upload a photo of their fridge or ingredients, and the agent will analyze the image and suggest dishes based on what it sees.
+  
